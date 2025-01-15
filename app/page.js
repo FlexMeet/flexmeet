@@ -1,7 +1,9 @@
 'use client';
 import { useState } from "react";
-import LoginModal from "./components/Loginpage.js";
-import SignUpModal from "./components/Signuppage";
+import LoginModal from "./modals/Loginpage.js";
+import SignUpModal from "./modals/Signuppage.js";
+import { useRouter } from "next/navigation";
+
 
 export default function Home() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -15,6 +17,7 @@ export default function Home() {
     setIsSignUpOpen(true); // Open Sign-Up Modal
   };
   const closeSignUp = () => setIsSignUpOpen(false);
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center">
@@ -33,7 +36,8 @@ export default function Home() {
       <main className="max-w-2xl mx-auto text-center mt-20 p-4">
         <p className="text-gray-500 text-sm">12 January 2025</p>
         <h2 className="text-8xl mt-2">Introducing FlexMeet</h2>
-        <button className="mt-6 px-6 py-3 bg-tele text-white rounded-full shadow-lg">
+        <button className="mt-6 px-6 py-3 bg-tele text-white rounded-full shadow-lg"
+        onClick={() => router.push("/setup")} >
           Try FlexMeet
         </button>
         <p className="text-gray-700 text-left mt-8">
