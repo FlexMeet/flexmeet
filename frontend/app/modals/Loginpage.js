@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from 'axios';
 <link
   rel="stylesheet"
   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
@@ -11,6 +12,17 @@ export default function LoginModal({ isOpen, onClose, onOpenSignUp }) {
   const togglePasswordVisibility = () => {
     setIsPasswordVisible((prev) => !prev);
   };
+
+  const [data, setData] = useState({
+    email: '',
+    password: ''
+  });
+
+  const loginUser = (e) => {
+    e.preventDefault();
+    console.log('Logging in user...');
+    axios.get('/');
+  }
 
   if (!isOpen) return null;
 
@@ -28,7 +40,7 @@ export default function LoginModal({ isOpen, onClose, onOpenSignUp }) {
         <h2 className="text-xl font-bold mb-4 text-center">Log In</h2>
 
         {/* Form */}
-        <form>
+        <form onSubmit={loginUser}>
           <div className="mb-4">
             <label
               className="block text-sm font-medium text-gray-700"
@@ -41,6 +53,8 @@ export default function LoginModal({ isOpen, onClose, onOpenSignUp }) {
               id="email"
               className="mt-1 p-2 w-full border rounded focus:outline-none focus:ring-2 focus:ring-tele"
               placeholder="Enter your email"
+              value = {data.email}
+              onChange = {(e) => setData({...data, email: e.target.value})}
             />
           </div>
           <div className="mb-4 relative">
@@ -55,6 +69,8 @@ export default function LoginModal({ isOpen, onClose, onOpenSignUp }) {
               id="password"
               className="mt-1 p-2 w-full border rounded focus:outline-none focus:ring-2 focus:ring-tele pr-10"
               placeholder="Enter your password"
+              value = {data.password}
+              onChange = {(e) => setData({...data, password: e.target.value})}
             />
             {/* Toggle Icon */}
             <button
