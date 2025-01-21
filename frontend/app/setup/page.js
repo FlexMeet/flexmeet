@@ -23,7 +23,7 @@ const filterToOptions = (fromTime) => {
 };
 
 // Custom Dropdown Component for Time Selection
-const CustomDropdown = ({ fromTime, filterToOptions, setTime, selectedTime, setSelectedTime, isFromDropdown }) => {
+const CustomDropdown = ({ fromTime, filterToOptions, setTime, selectedTime, setSelectedTime }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -36,6 +36,12 @@ const CustomDropdown = ({ fromTime, filterToOptions, setTime, selectedTime, setS
     setIsOpen(false);
   };
 
+const [selectedDay, setSelectedDay] = useState(null);
+
+const handleDayClick = (day) => {
+  setSelectedDay(day);
+};
+
   return (
     <div className="relative w-full">
       {/* Show the selected time or "Select time" if no time is selected */}
@@ -43,7 +49,7 @@ const CustomDropdown = ({ fromTime, filterToOptions, setTime, selectedTime, setS
         type="text"
         value={selectedTime || 'Select time'}  // Controlled value
         onClick={toggleDropdown}               // Toggle dropdown on click
-        className={`w-full p-2 border rounded cursor-pointer text-black ${selectedTime ? '' : 'text-gray-400'}`}  // Apply gray text color for "Select time"
+        className="w-full p-2 border rounded cursor-pointer text-black"
         readOnly
       />
 
@@ -52,8 +58,8 @@ const CustomDropdown = ({ fromTime, filterToOptions, setTime, selectedTime, setS
           className="absolute w-full mt-1 bg-white border rounded max-h-64 overflow-y-auto"
           style={{ zIndex: 1000 }}
         >
-          {isFromDropdown
-            ? timings.map((time, index) => (  // Always show all timings for "From"
+          {fromTime
+            ? filterToOptions(fromTime).map((time, index) => (
                 <div
                   key={index}
                   className="p-2 hover:bg-gray-200 cursor-pointer"
@@ -62,7 +68,7 @@ const CustomDropdown = ({ fromTime, filterToOptions, setTime, selectedTime, setS
                   {time}
                 </div>
               ))
-            : filterToOptions(fromTime).map((time, index) => (  // Filtered timings for "To"
+            : timings.map((time, index) => (
                 <div
                   key={index}
                   className="p-2 hover:bg-gray-200 cursor-pointer"
@@ -70,8 +76,7 @@ const CustomDropdown = ({ fromTime, filterToOptions, setTime, selectedTime, setS
                 >
                   {time}
                 </div>
-              ))
-          }
+              ))}
         </div>
       )}
     </div>
@@ -86,13 +91,9 @@ const Setup = () => {
   const [activeOptionGroup1, setActiveOptionGroup1] = useState('specificDates'); // Define state for active button
   const [activeOptionGroup2, setActiveOptionGroup2] = useState('datesAndTime'); // Define state for second button group
 
-  // Reset "To" time whenever "From" time is changed
-  const handleFromTimeChange = (newFromTime) => {
-    setFromTime(newFromTime);
-    setSelectedToTime(''); // Reset "To" time
-  };
+  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  return (
+  return ( 
     <div className="flex min-h-screen">
       {/* Left Section */}
       <div className="w-1/2 bg-white p-8 flex flex-col justify-center px-48">
@@ -160,10 +161,9 @@ const Setup = () => {
                 <CustomDropdown
                   fromTime={fromTime}
                   filterToOptions={filterToOptions}
-                  setTime={handleFromTimeChange} // Call custom handler to reset "To" time
+                  setTime={setFromTime}
                   selectedTime={fromTime}
                   setSelectedTime={setFromTime}
-                  isFromDropdown={true}  // Ensure "From" always shows all timings
                 />
               </div>
               <div className="flex flex-row items-center">
@@ -174,7 +174,6 @@ const Setup = () => {
                   setTime={setSelectedToTime}
                   selectedTime={selectedToTime}
                   setSelectedTime={setSelectedToTime}
-                  isFromDropdown={false}  // Apply filter to "To" based on "From"
                 />
               </div>
             </div>
@@ -188,12 +187,34 @@ const Setup = () => {
 
       {/* Right Section */}
       <div className="w-1/2 bg-tele flex items-center justify-center">
-        <div className="bg-white p-4 rounded shadow">
-          <Calendar
-            onChange={setDate}
-            value={date}
-            className="rounded-lg"
-          />
+        <div className="p-4 w-half">
+          {/* Conditional Rendering: Show Calendar or Days of the Week in Separate Containers */}
+          {activeOptionGroup1 === 'specificDates' && (
+            <div className="calendar-container">
+              <h3 className="text-xl font-semibold text-white text-center mb-2">Select a Date</h3>
+              <Calendar
+                onChange={setDate}
+                value={date}
+                className="rounded-lg"
+              />
+            </div>
+          )}
+
+          {activeOptionGroup1 === 'daysOfWeek' && (
+            <div className="days-container p-4">
+              <h3 className="text-xl text-center text-white font-semibold mb-2">Select a Day</h3>
+              <div className="grid grid-cols-7 gap-0">
+                {daysOfWeek.map((day, index) => (
+                  <button
+                    key={index}
+                    className="px-6 py-4 border-2 border-white text-white hover:bg-transparent hover:text-white transition-colors"
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -8,10 +8,11 @@ import axios from 'axios';
 axios.defaults.baseURL = 'http://localhost:8000';
 axios.defaults.withCredentials = true;
 
-
 export default function Home() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);  // Track login state
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);  // Track dropdown menu visibility
 
   const openLogin = () => setIsLoginOpen(true);
   const closeLogin = () => setIsLoginOpen(false);
@@ -21,6 +22,21 @@ export default function Home() {
     setIsSignUpOpen(true); // Open Sign-Up Modal
   };
   const closeSignUp = () => setIsSignUpOpen(false);
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);  // Set logged-in state to true
+    closeLogin();  // Close the login modal
+  };
+
+  const handleSignOut = () => {
+    setIsLoggedIn(false);  // Set logged-out state
+    // Optional: Call your API to log the user out
+  };
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prev) => !prev);  // Toggle dropdown visibility
+  };
+
   const router = useRouter();
 
   return (
@@ -28,12 +44,39 @@ export default function Home() {
       <header className="w-full bg-tele p-4 text-white flex justify-between items-center">
         <h1 className="text-xl font-bold">FlexMeet</h1>
         <div>
-          <button
-            onClick={openLogin}
-            className="pr-4 bg-tele font-bold text-white rounded"
-          >
-            Log In / Sign Up
-          </button>
+          {isLoggedIn ? (
+            <div className="relative">
+              <button
+                onClick={toggleDropdown}
+                className="pr-4 bg-tele font-bold text-white rounded"
+              >
+                My Profile
+              </button>
+              {isDropdownOpen && (
+                <div className="absolute right-0 bg-white shadow-lg rounded mt-2 w-48">
+                  <button
+                    onClick={() => router.push("/profile")}  // Navigate to profile edit page
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200"
+                  >
+                    Edit Profile
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={openLogin}
+              className="pr-4 bg-tele font-bold text-white rounded"
+            >
+              Log In / Sign Up
+            </button>
+          )}
         </div>
       </header>
 
@@ -59,7 +102,7 @@ export default function Home() {
       </main>
 
       {/* Render the LoginModal */}
-      <LoginModal isOpen={isLoginOpen} onClose={closeLogin} onOpenSignUp={openSignUp} />
+      <LoginModal isOpen={isLoginOpen} onClose={closeLogin} onOpenSignUp={openSignUp} onLogin={handleLogin} />
       <SignUpModal isOpen={isSignUpOpen} onClose={closeSignUp} />
     </div>
   );
