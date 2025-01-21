@@ -17,7 +17,7 @@ for (let i = 0; i < 24; i++) {
 // Filter available "To" timings based on selected "From" time
 const filterToOptions = (fromTime) => {
   if (!fromTime) return timings;
-  
+
   const fromIndex = timings.findIndex(time => time === fromTime);
   return timings.slice(fromIndex + 1);
 };
@@ -36,28 +36,17 @@ const CustomDropdown = ({ fromTime, filterToOptions, setTime, selectedTime, setS
     setIsOpen(false);
   };
 
-const [selectedDay, setSelectedDay] = useState(null);
-
-const handleDayClick = (day) => {
-  setSelectedDay(day);
-};
-
   return (
     <div className="relative w-full">
-      {/* Show the selected time or "Select time" if no time is selected */}
       <input
         type="text"
-        value={selectedTime || 'Select time'}  // Controlled value
-        onClick={toggleDropdown}               // Toggle dropdown on click
+        value={selectedTime || 'Select time'}
+        onClick={toggleDropdown}
         className="w-full p-2 border rounded cursor-pointer text-black"
         readOnly
       />
-
       {isOpen && (
-        <div
-          className="absolute w-full mt-1 bg-white border rounded max-h-64 overflow-y-auto"
-          style={{ zIndex: 1000 }}
-        >
+        <div className="absolute w-full mt-1 bg-white border rounded max-h-64 overflow-y-auto" style={{ zIndex: 1000 }}>
           {fromTime
             ? filterToOptions(fromTime).map((time, index) => (
                 <div
@@ -83,17 +72,57 @@ const handleDayClick = (day) => {
   );
 };
 
-// Setup Component (wrap all code inside this function)
+// Setup Component
 const Setup = () => {
   const [date, setDate] = useState(new Date());
   const [fromTime, setFromTime] = useState('');
   const [selectedToTime, setSelectedToTime] = useState('');
-  const [activeOptionGroup1, setActiveOptionGroup1] = useState('specificDates'); // Define state for active button
-  const [activeOptionGroup2, setActiveOptionGroup2] = useState('datesAndTime'); // Define state for second button group
+  const [activeOptionGroup1, setActiveOptionGroup1] = useState('specificDates');
+  const [activeOptionGroup2, setActiveOptionGroup2] = useState('datesAndTime');
+  const [selectedDays, setSelectedDays] = useState(new Set());
+  const [dragging, setDragging] = useState(false);
+  const [dragStartIndex, setDragStartIndex] = useState(null);
 
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  return ( 
+  const handleMouseDown = (index) => {
+    setDragging(true);
+    setDragStartIndex(index);
+
+    const newSelectedDays = new Set(selectedDays);
+    if (newSelectedDays.has(index)) {
+      newSelectedDays.delete(index);
+    } else {
+      newSelectedDays.add(index);
+    }
+    setSelectedDays(newSelectedDays);
+  };
+
+  const handleMouseOver = (index) => {
+    if (!dragging || dragStartIndex === null) return;
+
+    const start = Math.min(dragStartIndex, index);
+    const end = Math.max(dragStartIndex, index);
+
+    const newSelectedDays = new Set(selectedDays);
+    const dragSelecting = !selectedDays.has(dragStartIndex);
+
+    for (let i = start; i <= end; i++) {
+      if (dragSelecting) {
+        newSelectedDays.add(i);
+      } else {
+        newSelectedDays.delete(i);
+      }
+    }
+    setSelectedDays(newSelectedDays);
+  };
+
+  const handleMouseUp = () => {
+    setDragging(false);
+    setDragStartIndex(null);
+  };
+
+  return (
     <div className="flex min-h-screen">
       {/* Left Section */}
       <div className="w-1/2 bg-white p-8 flex flex-col justify-center px-48">
@@ -188,7 +217,6 @@ const Setup = () => {
       {/* Right Section */}
       <div className="w-1/2 bg-tele flex items-center justify-center">
         <div className="p-4 w-half">
-          {/* Conditional Rendering: Show Calendar or Days of the Week in Separate Containers */}
           {activeOptionGroup1 === 'specificDates' && (
             <div className="calendar-container">
               <h3 className="text-xl font-semibold text-white text-center mb-2">Select a Date</h3>
@@ -202,12 +230,21 @@ const Setup = () => {
 
           {activeOptionGroup1 === 'daysOfWeek' && (
             <div className="days-container p-4">
-              <h3 className="text-xl text-center text-white font-semibold mb-2">Select a Day</h3>
-              <div className="grid grid-cols-7 gap-0">
+              <h3 className="text-xl text-center text-white font-semibold mb-2">Select Days of the Week</h3>
+              <div
+                className="grid grid-cols-7 gap-0 select-none"
+                onMouseUp={handleMouseUp}
+              >
                 {daysOfWeek.map((day, index) => (
                   <button
                     key={index}
-                    className="px-6 py-4 border-2 border-white text-white hover:bg-transparent hover:text-white transition-colors"
+                    className={`px-6 py-4 border-2 border-white transition-colors ${
+                      selectedDays.has(index)
+                        ? 'bg-white text-tele'
+                        : 'bg-transparent text-white'
+                    }`}
+                    onMouseDown={() => handleMouseDown(index)}
+                    onMouseOver={() => handleMouseOver(index)}
                   >
                     {day}
                   </button>
