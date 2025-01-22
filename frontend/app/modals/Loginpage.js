@@ -1,35 +1,20 @@
 import { useState } from "react";
 import axios from 'axios';
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-/>
-
 
 export default function LoginModal({ isOpen, onClose, onOpenSignUp }) {
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setIsPasswordVisible((prev) => !prev);
-  };
-
-  const [data, setData] = useState({
-    email: '',
-    password: ''
-  });
+  const [data, setData] = useState({ email: '', password: '' });
 
   const loginUser = (e) => {
     e.preventDefault();
     console.log('Logging in user...');
     axios.get('/');
-  }
+  };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative flex flex-col">
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
@@ -39,13 +24,9 @@ export default function LoginModal({ isOpen, onClose, onOpenSignUp }) {
 
         <h2 className="text-xl font-bold mb-4 text-center">Log In</h2>
 
-        {/* Form */}
         <form onSubmit={loginUser}>
           <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700"
-              htmlFor="email"
-            >
+            <label className="block text-sm font-medium text-gray-700" htmlFor="email">
               Email
             </label>
             <input
@@ -53,45 +34,22 @@ export default function LoginModal({ isOpen, onClose, onOpenSignUp }) {
               id="email"
               className="mt-1 p-2 w-full border rounded focus:outline-none focus:ring-2 focus:ring-tele"
               placeholder="Enter your email"
-              value = {data.email}
-              onChange = {(e) => setData({...data, email: e.target.value})}
+              value={data.email}
+              onChange={(e) => setData({ ...data, email: e.target.value })}
             />
           </div>
           <div className="mb-4 relative">
-            <label
-              className="block text-sm font-medium text-gray-700"
-              htmlFor="password"
-            >
+            <label className="block text-sm font-medium text-gray-700" htmlFor="password">
               Password
             </label>
             <input
-              type={isPasswordVisible ? "text" : "password"}
+              type="password"
               id="password"
               className="mt-1 p-2 w-full border rounded focus:outline-none focus:ring-2 focus:ring-tele pr-10"
               placeholder="Enter your password"
-              value = {data.password}
-              onChange = {(e) => setData({...data, password: e.target.value})}
+              value={data.password}
+              onChange={(e) => setData({ ...data, password: e.target.value })}
             />
-            {/* Toggle Icon */}
-            <button
-                type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute top-1/2 transform -translate-y-1/2 right-3 text-gray-500 hover:text-gray-700 focus:outline-none"
-                >
-                {isPasswordVisible ? (
-                    <img
-                    src="/images/eye-slash.svg"
-                    alt="Hide password"
-                    className="h-5 w-5"
-                  />
-                ) : (
-                  <img
-                    src="/images/eye.svg"
-                    alt="Show password"
-                    className="h-5 w-5"
-                  />
-                )}
-            </button>
           </div>
           <button
             type="submit"

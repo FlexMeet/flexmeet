@@ -4,87 +4,128 @@ import { useState } from 'react';
 import Calendar from 'react-calendar'; // For dynamic calendar
 import 'react-calendar/dist/Calendar.css'; // Include calendar styles
 
-export default function Setup() {
-  const [activeOptionGroup1, setActiveOptionGroup1] = useState('specificDates'); // Selected button for the first group
-  const [activeOptionGroup2, setActiveOptionGroup2] = useState('datesAndTime'); // Selected button for the second group
-  const [date, setDate] = useState(new Date()); // Selected date for the calendar
-  const [fromTime, setFromTime] = useState(''); // From time selected
-  const [selectedToTime, setSelectedToTime] = useState(''); // Selected To time
+// Create an array of 24-hour timings in 30-minute increments
+const timings = [];
+for (let i = 0; i < 24; i++) {
+  const hour = i < 10 ? `0${i}` : i;
+  timings.push(
+    `${hour}:00`,
+    `${hour}:30`
+  );
+}
 
-  // Create an array of 24-hour timings in 30-minute increments
-  const timings = [];
-  for (let i = 0; i < 24; i++) {
-    const hour = i < 10 ? `0${i}` : i;
-    timings.push(
-      `${hour}:00`,
-      `${hour}:30`
-    );
-  }
+// Filter available "To" timings based on selected "From" time
+const filterToOptions = (fromTime) => {
+  if (!fromTime) return timings;
 
-  // Filter available "To" timings based on selected "From" time
-  const filterToOptions = (fromTime) => {
-    if (!fromTime) return timings;
-    
-    const fromIndex = timings.findIndex(time => time === fromTime);
-    return timings.slice(fromIndex + 1); // Ensures "To" times are after "From" times
+  const fromIndex = timings.findIndex(time => time === fromTime);
+  return timings.slice(fromIndex + 1);
+};
+
+// Custom Dropdown Component for Time Selection
+const CustomDropdown = ({ fromTime, filterToOptions, setTime, selectedTime, setSelectedTime }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
   };
 
-  // Custom Dropdown Component for Time Selection
-  const CustomDropdown = ({ fromTime, filterToOptions, setTime, selectedTime, setSelectedTime }) => {
-    const [isOpen, setIsOpen] = useState(false);
+  const handleSelect = (option) => {
+    setSelectedTime(option);
+    setTime(option);
+    setIsOpen(false);
+  };
 
-    const toggleDropdown = () => {
-      setIsOpen(!isOpen);
-    };
-
-    const handleSelect = (option) => {
-      setSelectedTime(option);
-      setTime(option);
-      setIsOpen(false);
-    };
-
-    return (
-      <div className="relative">
-        <div
-          className={`p-2 border rounded cursor-pointer ${selectedTime ? 'text-black' : 'text-gray-400'}`} // Conditionally apply text color
-          onClick={toggleDropdown}>
-          {selectedTime || 'Select time'}
+  return (
+    <div className="relative w-full">
+      <input
+        type="text"
+        value={selectedTime || 'Select time'}
+        onClick={toggleDropdown}
+        className="w-full p-2 border rounded cursor-pointer text-black"
+        readOnly
+      />
+      {isOpen && (
+        <div className="absolute w-full mt-1 bg-white border rounded max-h-64 overflow-y-auto" style={{ zIndex: 1000 }}>
+          {fromTime
+            ? filterToOptions(fromTime).map((time, index) => (
+                <div
+                  key={index}
+                  className="p-2 hover:bg-gray-200 cursor-pointer"
+                  onClick={() => handleSelect(time)}
+                >
+                  {time}
+                </div>
+              ))
+            : timings.map((time, index) => (
+                <div
+                  key={index}
+                  className="p-2 hover:bg-gray-200 cursor-pointer"
+                  onClick={() => handleSelect(time)}
+                >
+                  {time}
+                </div>
+              ))}
         </div>
+      )}
+    </div>
+  );
+};
 
-        {isOpen && (
-          <div
-            className="absolute w-full mt-1 bg-white border rounded max-h-64 overflow-y-auto"
-            style={{ zIndex: 1000 }}
-          >
-            {fromTime
-              ? filterToOptions(fromTime).map((time, index) => (
-                  <div
-                    key={index}
-                    className="p-2 hover:bg-gray-200 cursor-pointer"
-                    onClick={() => handleSelect(time)}
-                  >
-                    {time}
-                  </div>
-                ))
-              : timings.map((time, index) => (
-                  <div
-                    key={index}
-                    className="p-2 hover:bg-gray-200 cursor-pointer"
-                    onClick={() => handleSelect(time)}
-                  >
-                    {time}
-                  </div>
-                ))}
-          </div>
-        )}
-      </div>
-    );
+// Setup Component
+const Setup = () => {
+  const [date, setDate] = useState(new Date());
+  const [fromTime, setFromTime] = useState('');
+  const [selectedToTime, setSelectedToTime] = useState('');
+  const [activeOptionGroup1, setActiveOptionGroup1] = useState('specificDates');
+  const [activeOptionGroup2, setActiveOptionGroup2] = useState('datesAndTime');
+  const [selectedDays, setSelectedDays] = useState(new Set());
+  const [dragging, setDragging] = useState(false);
+  const [dragStartIndex, setDragStartIndex] = useState(null);
+
+  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  const handleMouseDown = (index) => {
+    setDragging(true);
+    setDragStartIndex(index);
+
+    const newSelectedDays = new Set(selectedDays);
+    if (newSelectedDays.has(index)) {
+      newSelectedDays.delete(index);
+    } else {
+      newSelectedDays.add(index);
+    }
+    setSelectedDays(newSelectedDays);
+  };
+
+  const handleMouseOver = (index) => {
+    if (!dragging || dragStartIndex === null) return;
+
+    const start = Math.min(dragStartIndex, index);
+    const end = Math.max(dragStartIndex, index);
+
+    const newSelectedDays = new Set(selectedDays);
+    const dragSelecting = !selectedDays.has(dragStartIndex);
+
+    for (let i = start; i <= end; i++) {
+      if (dragSelecting) {
+        newSelectedDays.add(i);
+      } else {
+        newSelectedDays.delete(i);
+      }
+    }
+    setSelectedDays(newSelectedDays);
+  };
+
+  const handleMouseUp = () => {
+    setDragging(false);
+    setDragStartIndex(null);
   };
 
   return (
     <div className="flex min-h-screen">
       {/* Left Section */}
-      <div className="w-1/2 bg-white p-8 flex flex-col justify-center px-64">
+      <div className="w-1/2 bg-white p-8 flex flex-col justify-center px-48">
         <h2 className="text-2xl font-bold mb-6">Event Name</h2>
         <input
           type="text"
@@ -149,7 +190,7 @@ export default function Setup() {
                 <CustomDropdown
                   fromTime={fromTime}
                   filterToOptions={filterToOptions}
-                  setTime={setFromTime} // Pass setFromTime to update "fromTime"
+                  setTime={setFromTime}
                   selectedTime={fromTime}
                   setSelectedTime={setFromTime}
                 />
@@ -159,7 +200,7 @@ export default function Setup() {
                 <CustomDropdown
                   fromTime={fromTime}
                   filterToOptions={filterToOptions}
-                  setTime={setSelectedToTime} // Pass setSelectedToTime to update "toTime"
+                  setTime={setSelectedToTime}
                   selectedTime={selectedToTime}
                   setSelectedTime={setSelectedToTime}
                 />
@@ -175,14 +216,46 @@ export default function Setup() {
 
       {/* Right Section */}
       <div className="w-1/2 bg-tele flex items-center justify-center">
-        <div className="bg-white p-4 rounded shadow">
-          <Calendar
-            onChange={setDate}
-            value={date}
-            className="rounded-lg"
-          />
+        <div className="p-4 w-half">
+          {activeOptionGroup1 === 'specificDates' && (
+            <div className="calendar-container">
+              <h3 className="text-xl font-semibold text-white text-center mb-2">Select a Date</h3>
+              <Calendar
+                onChange={setDate}
+                value={date}
+                className="rounded-lg"
+              />
+            </div>
+          )}
+
+          {activeOptionGroup1 === 'daysOfWeek' && (
+            <div className="days-container p-4">
+              <h3 className="text-xl text-center text-white font-semibold mb-2">Select Days of the Week</h3>
+              <div
+                className="grid grid-cols-7 gap-0 select-none"
+                onMouseUp={handleMouseUp}
+              >
+                {daysOfWeek.map((day, index) => (
+                  <button
+                    key={index}
+                    className={`px-6 py-4 border-2 border-white transition-colors ${
+                      selectedDays.has(index)
+                        ? 'bg-white text-tele'
+                        : 'bg-transparent text-white'
+                    }`}
+                    onMouseDown={() => handleMouseDown(index)}
+                    onMouseOver={() => handleMouseOver(index)}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default Setup;
