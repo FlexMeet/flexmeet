@@ -1,18 +1,18 @@
-'use client';
-import { useState } from "react";
+'use client'; // Ensure this is present
+
+import { useState } from 'react';  
 import LoginModal from "./modals/Loginpage.js";
 import SignUpModal from "./modals/Signuppage.js";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";  // Import useRouter from next/navigation
 import axios from 'axios';
 
 axios.defaults.baseURL = 'http://localhost:8000';
 axios.defaults.withCredentials = true;
-
 export default function Home() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);  // Track login state
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);  // Track dropdown menu visibility
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const openLogin = () => setIsLoginOpen(true);
   const closeLogin = () => setIsLoginOpen(false);
@@ -24,7 +24,7 @@ export default function Home() {
   const closeSignUp = () => setIsSignUpOpen(false);
 
   const handleLogin = () => {
-    setIsLoggedIn(true);  // Set logged-in state to true
+    setIsLoggedIn(true);
     closeLogin();  // Close the login modal
   };
 
@@ -55,7 +55,7 @@ export default function Home() {
               {isDropdownOpen && (
                 <div className="absolute right-0 bg-white shadow-lg rounded mt-2 w-48">
                   <button
-                    onClick={() => router.push("/profile")}  // Navigate to profile edit page
+                    onClick={() => router.push("/profile")}
                     className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200"
                   >
                     Edit Profile
@@ -101,9 +101,8 @@ export default function Home() {
         </p>
       </main>
 
-      {/* Render the LoginModal */}
       <LoginModal isOpen={isLoginOpen} onClose={closeLogin} onOpenSignUp={openSignUp} onLogin={handleLogin} />
-      <SignUpModal isOpen={isSignUpOpen} onClose={closeSignUp} />
+      <SignUpModal isOpen={isSignUpOpen} onClose={closeSignUp} onOpenLogin={openLogin} /> {/* Add onOpenLogin here */}
     </div>
   );
 }
