@@ -1,14 +1,34 @@
-export default function SignUpModal({ isOpen, onClose, onOpenLogin }) {
-  if (!isOpen) return null;
+import { useState } from "react";
+import axios from "axios";
+import {toast} from "react-hot-toast"
 
-  const handleSignUp = (e) => {
+export default function SignUpModal({ isOpen, onClose }) {
+  if (!isOpen) {
+    return null;
+  }
+  const [data, setData] = useState({
+    name: "",
+    email: "",
+    password: ""
+  });
+  
+  
+  const registerUser = async (e) => {
     e.preventDefault();
-    // Perform sign-up logic (e.g., sending data to server)
-
-    // After sign-up, open the login modal
-    onOpenLogin(); // Open the login modal
-    onClose(); // Close the sign-up modal
-  };
+    const { name, email, password } = data;
+    try {
+      const {data} = await axios.post("/register", {name, email, password});
+      if (data.error) {
+        toast.error(data.error);
+      } else {
+        setData({ name: "", email: "", password: "" });
+        toast.success("login successful");
+        // TODO: close the modal
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -20,21 +40,28 @@ export default function SignUpModal({ isOpen, onClose, onOpenLogin }) {
           ✖
         </button>
         <h2 className="text-xl font-bold mb-4 text-center">Sign Up</h2>
-        <form onSubmit={handleSignUp}>
-          {/* Username, Email, Password Inputs */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700" htmlFor="username">
+        <form onSubmit={registerUser}>
+        <div className="mb-4">
+            <label
+              className="block text-sm font-medium text-gray-700"
+              htmlFor="username"
+            >
               Username
             </label>
             <input
-              type="text"
+              type="username"
               id="username"
               className="mt-1 p-2 w-full border rounded focus:outline-none focus:ring-2 focus:ring-tele"
               placeholder="Choose a username"
+              value={data.name}
+              onChange = {(e) => setData({...data, name: e.target.value})}
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700" htmlFor="email">
+            <label
+              className="block text-sm font-medium text-gray-700"
+              htmlFor="email"
+            >
               Email
             </label>
             <input
@@ -42,10 +69,15 @@ export default function SignUpModal({ isOpen, onClose, onOpenLogin }) {
               id="email"
               className="mt-1 p-2 w-full border rounded focus:outline-none focus:ring-2 focus:ring-tele"
               placeholder="Enter your email"
+              value={data.email}
+              onChange = {(e) => setData({...data, email: e.target.value})}
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700" htmlFor="password">
+            <label
+              className="block text-sm font-medium text-gray-700"
+              htmlFor="password"
+            >
               Password
             </label>
             <input
@@ -53,17 +85,23 @@ export default function SignUpModal({ isOpen, onClose, onOpenLogin }) {
               id="password"
               className="mt-1 p-2 w-full border rounded focus:outline-none focus:ring-2 focus:ring-tele"
               placeholder="Enter your password"
+              
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700" htmlFor="confirm-password">
-              Confirm Password
+            <label
+              className="block text-sm font-medium text-gray-700"
+              htmlFor="password"
+            >
+              Password
             </label>
             <input
               type="password"
-              id="confirm-password"
+              id="password"
               className="mt-1 p-2 w-full border rounded focus:outline-none focus:ring-2 focus:ring-tele"
-              placeholder="Confirm your password"
+              placeholder="Enter your password again"
+              value={data.password}
+              onChange = {(e) => setData({...data, password: e.target.value})}
             />
           </div>
           <button
@@ -77,3 +115,4 @@ export default function SignUpModal({ isOpen, onClose, onOpenLogin }) {
     </div>
   );
 }
+  
