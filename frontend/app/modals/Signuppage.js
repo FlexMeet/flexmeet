@@ -2,12 +2,10 @@ export default function SignUpModal({ isOpen, onClose, onOpenLogin }) {
   if (!isOpen) return null;
 
   const handleSignUp = (e) => {
-    e.preventDefault();
-    // Perform sign-up logic (e.g., sending data to server)
-
-    // After sign-up, open the login modal
-    onOpenLogin(); // Open the login modal
-    onClose(); // Close the sign-up modal
+    e.preventDefault(); // Prevent form submission
+    // After sign-up, open login modal and close sign-up modal
+    onOpenLogin(); // Open login modal
+    onClose(); // Close sign-up modal
   };
 
   return (
